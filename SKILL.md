@@ -1,7 +1,7 @@
 ---
 name: graph-workflow
 license: MIT
-description: Run a product build as a small graph of four roles — Main (this session: PM + Architect + orchestrator + code reviewer), Coder, Tester and Punk (product/UX objector) — with the user as CEO at the plan gate and at every milestone gate, and a Python script (gw.py) that enforces step order and mechanical gates. State lives in docs/workflow/ inside the repo. Use it when the current repo already has docs/workflow/, or when the user asks to set the workflow up, to plan or build a product "with the team" or "graph workflow", or names Main, Coder, Tester or Punk. Inside such a repo, short commands like "开工", "继续", "下一个任务", "里程碑", "punk 审查", "state", "run the next task", "what's blocked" mean this workflow; outside one they do not. Do not use for one-off scripts, quick fixes outside a workflow project, or non-software tasks.
+description: Run a product build as a small graph of four roles — Main (this session: PM + Architect + orchestrator + code reviewer), Coder, Tester and Punk (product/UX objector) — with the user as CEO at the plan gate and at every milestone gate, and a Python script (gw.py) that enforces step order and mechanical gates. State lives in docs/workflow/ inside the repo. Use it when the current repo already has docs/workflow/, or when the user asks to set the workflow up, to plan or build a product "with the team" or "graph workflow", or names Main, Coder, Tester or Punk. Inside such a repo, short commands like "开搞", "GO!", "Go ahead", "milestone", "punk", "state", "run the next task", "what's blocked" mean this workflow; outside one they do not. Do not use for one-off scripts, quick fixes outside a workflow project, or non-software tasks.
 ---
 
 # graph-workflow (v0.5)
@@ -16,7 +16,7 @@ You are **Main**: product manager, architect, orchestrator and code reviewer. Th
 
 Research and run history: [research-notes.md](research-notes.md). Changes: [CHANGELOG.md](CHANGELOG.md).
 
-This skill applies only in a repo that has `docs/workflow/`, or when the CEO asks to set one up. A bare "继续" anywhere else is not a reason to start it.
+This skill applies only in a repo that has `docs/workflow/`, or when the CEO asks to set one up. A bare "continue" anywhere else is not a reason to start it.
 
 ## The team
 

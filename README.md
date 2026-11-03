@@ -45,7 +45,7 @@ flowchart TD
     subgraph Agents["🤖 Ephemeral Role Nodes (Fresh Context per Step)"]
         Main["🧠 Main (Tier 1: Strongest Model)
         PM + Architect + Orchestrator + Code Reviewer"]
-        Tester["🧪 gw-tester (Tier 2: Fast Coder)
+        Tester["🩹 gw-tester (Tier 2: Fast Coder)
         Writes visible + held-out tests BEFORE code exists"]
         Coder["🛠️ gw-coder (Tier 2: Fast Coder)
         Implements in isolated Git Worktree (<repo>.gw/N)"]
@@ -91,7 +91,9 @@ flowchart TD
 ## Key Mechanisms in v0.5
 
 ### 1. Gate 1: Seven-Category Edge-Case Sweep (`gw gate 1`)
+
 Before a single task brief can be written, Main sweeps every requirement in `PRD.md` across 7 mandatory edge-case categories:
+
 - `threshold` (at/just below boundary)
 - `interleave` (action B while A is in progress)
 - `repeat` (double-click, rapid re-entry)
@@ -103,20 +105,26 @@ Before a single task brief can be written, Main sweeps every requirement in `PRD
 Undisputed categories get a single `- No dispute: <category>` line (avoiding Cartesian product fatigue). Disputed cases become rows in `## Edge cases` (`E1`, `E2`...) where **the human CEO must fill the `Decision` column (`Source: CEO`)**. `gw gate 1` mechanically blocks `gw brief N` until every category is accounted for and every decision is signed off by the CEO.
 
 ### 2. Blind Held-Out Vault & Single-Use Burn (`gw seal`, `gw holdout`, `gw burn`)
+
 - **Test-First**: `gw-tester` writes `visible/` and `holdout/` suites *before* `gw-coder` sees the task.
 - **Test Caps & Source-Text Ban**: `gw planned N` statically counts test definitions (`it(`, `def test_`, `#[test]`, `func Test`) and enforces at most **1 visible + 2 held-out tests** per criterion/edge row. It also blocks any test that reads product source files (`src/`) as text strings.
 - **Vault Isolation & Single-Use Burn**: `gw seal N` moves `holdout/` into `~/.gw-vault/`. If a Coder passes `visible/` tests and Main's code review but fails `gw holdout N`, **that held-out set is considered leaked (`gw burn N`)**: it is permanently moved into `visible/` for the Coder to debug, and `gw-tester` is invoked to write a brand-new unseen held-out set (`set + 1`).
 
 ### 3. Orchestration as a Headless State Machine
+
 UI, native window lifecycles, and timer/sync glue are notoriously hard to unit-test. When a task's risk layer is `orchestration`, `gw` enforces a strict functional split:
+
 - **Pure Core**: `step(state, event) -> (state, effects)` where `state`, `event`, and `effects` are plain data enums, and time arrives strictly as an event (`Tick(now)`). `gw-tester` blasts the core with reordered, duplicated, and interleaved event sequences.
 - **Imperative Shell**: Translates OS/DOM facts into events and executes effects 1-to-1. **Shell files may never import the state type**—enforced mechanically by `gw check` via `shell_paths` and `shell_forbid` regex rules. The shell is verified visually by `gw-punk` and the CEO.
 
 ### 4. Script-Led Orchestration Inversion (`gw drive N`)
+
 In persistent chat sessions, the orchestrator's context window balloons (from 79k to 410k tokens in our benchmark, burning 40.7M cached read tokens). `scripts/drive.py` inverts control:
+
 ```bash
 python scripts/gw.py drive 1
 ```
+
 `drive.py` runs as an external zero-token state loop, spawning fresh headless `claude -p --output-format json` sessions for each step (`brief` → `tester` → `spec-check` → `coder` → `review` → `finish`), feeding each session only the exact file paths it needs and parsing Main's single-line `VERDICT: done | pass | fail | rerun-tester | stop`.
 
 ---
@@ -138,6 +146,7 @@ In [research-notes.md §11](research-notes.md), we tested `graph-workflow` again
 ## Quick Start & Installation
 
 ### 1. Install the Skill (Outside Your Product Repo)
+>
 > **Important:** Install `graph-workflow` in your personal skills directory (e.g., `~/.claude/skills/graph-workflow`), **never inside the product repository**, so subagents cannot read the skill internals or discover where held-out vaults live.
 
 ```bash
@@ -145,6 +154,7 @@ git clone https://github.com/<your-org>/graph-workflow.git ~/.claude/skills/grap
 ```
 
 ### 2. Initialize Inside Your Product Repository
+
 From your product repository's root (must be a Git repo, preferably off cloud-synced drives):
 
 ```bash
@@ -160,6 +170,7 @@ cp ~/.claude/skills/graph-workflow/agents/gw-{coder,tester,punk}.md .claude/agen
 ```
 
 ### 3. Configure `docs/workflow/gw.json`
+
 Edit `docs/workflow/gw.json` to match your stack's test runner, source directories, and headless state-machine boundaries:
 
 ```json

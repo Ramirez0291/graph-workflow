@@ -10,14 +10,14 @@ Multi-agent coding setups tend to fail in the same few ways: information is lost
 
 `graph-workflow` combines a **four-role graph** (`Main`, `Coder`, `Tester`, `Punk`) with a **standard-library Python script** (`scripts/gw.py`) that enforces step order and mechanical gates, plus a **prototype script-led orchestrator** (`gw drive`).
 
-> **Status: experimental.** v0.1 → v0.5 took four days (2026-10-31 → 11-03). It has run on two real projects (a desktop pet app on v0.2, a focus timer on v0.4) and a set of toy repositories. v0.5 itself and `gw drive` have not yet run on a real project.
+> **Status: experimental.** The workflow has been proven viable in practice; however, the latest version, v0.5, has not yet run on a real large project.
 
 ---
 
 ## Five observations from real builds
 
 1. **Keep planning in one brain.** PM, architect, orchestrator and reviewer are one role, `Main`, running in one session. Subagents exist only for fresh eyes (`gw-tester`, `gw-punk`), for worktree isolation and parallel work (`gw-coder`), and to keep Main's context small on large projects.
-2. **Models decide ambiguous cases silently.** In the four-build *Flow Timer* benchmark ([research-notes §11](research-notes.md)), every build, this workflow included, settled four planted edge cases without asking the human. They happened to agree on those four, but split on two other undisclosed choices. `gw gate 1` now blocks task briefs until a seven-category edge-case table carries the human's decision on every disputed row.
+2. **Models decide ambiguous cases silently.** In the four-build *Flow Timer* benchmark ([research-notes](research-notes.md)), every build, this workflow included, settled four planted edge cases without asking the human. They happened to agree on those four, but split on two other undisclosed choices. `gw gate 1` now blocks task briefs until a seven-category edge-case table carries the human's decision on every disputed row.
 3. **Prompts lower over-defense; review removes it.** Coding models add unrequested state flags, version counters, retries and repeated resets. The Coder must list every guard under `## Defenses added`, and Main's review deletes any guard that names no failure.
 4. **A builder does not see its own UX.** Both single-agent builds shipped all six of a set of common UX faults: a destructive action with no confirmation, no state in the tab title, text contrast below WCAG AA, focus not moved to a banner that appears, touch targets under 44 px, and work lost on reload. One of them had taken its own screenshots. `gw-punk` never reads code; it checks the PRD and live screenshots against an `Always check` list.
 5. **Rules in prose lose to model habits; rules in code do not.** `gw.py` enforces step order, the Coder's file list, byte-identical visible tests, the held-out vault, test-count caps and document budgets mechanically.

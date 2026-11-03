@@ -21,6 +21,7 @@ From the Flow Timer run (research-notes §11): the workflow decided the planted 
 | A wrong attribution in Main's report | claims about who did what cite the log or a diff |
 | Single agents shipped six common UX faults | Punk "Always check" table and report line; at most 12 screenshots, one theme, one script per round (`gw docs`) |
 | Seal guessed "worktree open" from a folder's existence | uses the task's slot |
+| Licence before open-sourcing | AGPL-3.0 → MIT; LICENSE and README added |
 
 ## v0.4 — 2026-11-02
 
@@ -88,9 +89,7 @@ Driven by the first real run (v0.2 on Codex, desktop pet M1; details in research
 - **No hard-coded handle.** The operative files say "the CEO"; research-notes keeps the dated record of who decided what.
 - **Serves line** in every brief quotes the PRD criterion it moves; the spec check asks whether the criteria, as the Tester read them, actually move it.
 
-### Housekeeping
 
-- ICT-related lines removed from research-notes.md and SKILL.md Setup.
 
 ## v0.1 — 2026-10-31
 

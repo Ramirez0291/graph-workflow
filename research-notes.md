@@ -2,7 +2,7 @@
 
 Goal: a Claude Code skill that runs a big product build as a **graph of roles**
 (PM, PjM, Architect, UI/UX, Test, DBA, Security …), where every role is
-"Claude + USER", and USER is the human CEO with final say.
+"Claude + the CEO", and the CEO is the human with final say.
 
 ## 1. Sources worth reading
 
@@ -41,24 +41,24 @@ Goal: a Claude Code skill that runs a big product build as a **graph of roles**
 4. **Role is not the same as agent.** Run the role chain as one conversation (single-agent baseline) by default. Spawn a separate agent only when: (a) fresh eyes are needed (tester, reviewer, security must not share the developer's context), (b) tasks are independent and parallel, (c) context would overflow. (2601.12307, Cross-Reflection pattern)
 5. **Scale the graph to the task.** Classify first: tiny fix → Dev only; feature → PM+Arch+Dev+Test; new product → full graph. (BMAD, survey "minimum plasticity")
 6. **Parallelism by file scope + dependency metadata.** Tasks declare `depends_on`, `parallel`, `conflicts_with`; each agent owns a file set; integrate via worktrees or the Workflow tool. (ccpm)
-7. **Human-in-the-loop as a first-class node type.** USER approves at gates, resolves PM/Architect conflicts, and owns product judgement. (ChatDev 2.0, Human-Reflection pattern)
+7. **Human-in-the-loop as a first-class node type.** The CEO approves at gates, resolves PM/Architect conflicts, and owns product judgement. (ChatDev 2.0, Human-Reflection pattern)
 8. **State lives in the repo, not in the conversation.** A `docs/` (or `.workflow/`) folder is the graph's memory; the coordinator conversation stays thin. (ccpm, BMAD)
 9. **Design against the failure taxonomy.** Checklist per node: task spec restated? role boundaries? termination condition? reasoning→action consistent? verification present and correct? (MAST)
 10. **Trace before you tune.** Log every node run (inputs, outputs, gate result). Change prompts only after traces show which node failed; change topology only after structural failures recur. (2603.22386)
 11. **Security as an explicit node.** Almost nobody does it (3.2%); a threat-model node on PRD+architecture and a re-check before release is cheap differentiation.
 
-## 3. Draft graph (to discuss with Rami)
+## 3. Draft graph (to discuss with the CEO)
 
-```mermaid
-Rami: idea --> PM: PRD --> [ UX: flows+wireframes || Architect: design/API/data || Security: threat model ]
+```text
+CEO: idea --> PM: PRD --> [ UX: flows+wireframes || Architect: design/API/data || Security: threat model ]
                                    |
                            DBA: schema review --> Planner: tasks.md (depends_on / parallel)
                                    |
-                           <-- GATE 1 (R approves plan; verifier checks PRD coverage) -- loop <=3
+                           <-- GATE 1 (CEO approves plan; verifier checks PRD coverage) -- loop <=3
                                    |
      per task (parallel where allowed): Dev --> Test (fresh ctx) --> Review (fresh ctx) --> GATE 2 -- loop <=3
                                    |
-                           Integrate --> Security re-check --> Release verifier --> GATE 3 (R) --> done
+                           Integrate --> Security re-check --> Release verifier --> GATE 3 (CEO) --> done
 ```
 
 Node types: `human`, `role` (prompt + artifact in/out), `verifier`, `gate`, `parallel`, `loop(max)`.
@@ -72,33 +72,33 @@ Representation: one YAML/Markdown graph file per project + role prompt files; ru
 | B. Build own thin skill (recommended) | Fits Claude Code natively (skill + `.claude/agents` + Workflow tool); we understand every edge; grows with us | We own the maintenance |
 | C. Hybrid | Steal BMAD artifact templates + ccpm task metadata, own graph runner | Best of both; slightly more upfront design |
 
-## 5. Decision 2026-10-31 — Rami's team: 4 agents, not 8
+## 5. Decision 2026-10-31 — the CEO's team: 4 agents, not 8
 
-Rami's reasoning: Claude is strong enough now; every extra hand-off loses information. Keep the team small.
+The CEO's reasoning: Claude is strong enough now; every extra hand-off loses information. Keep the team small.
 
 | # | Agent | Model | Role bundle | Context it sees |
 | --- | --- | --- | --- | --- |
-| 1 | **Main** | strongest available | PM + Architect + orchestrator + code reviewer. Talks to R. Owns PRD, architecture, tasks.md. | Everything (repo files are its memory so it survives compaction) |
+| 1 | **Main** | strongest available | PM + Architect + orchestrator + code reviewer. Talks to the CEO. Owns PRD, architecture, tasks.md. | Everything (repo files are its memory so it survives compaction) |
 | 2 | **Coder** | fast coder, highest reasoning setting | Implements one task brief at a time. | brief-N.md + the files named in it + relevant architecture excerpt. Returns code + handoff-N.md |
 | 3 | **Tester** | fast coder, highest reasoning setting | Writes/runs tests from acceptance criteria. Fresh context, never sees Coder's reasoning. | brief-N.md + acceptance criteria + code |
 | 4 | **Punk** | strong judgment + vision | UI/UX designer + objector / devil's advocate. Reviews the whole product and raises ranked objections and UX proposals. | PRD + architecture + running product / screens; not the chat history |
 
 Graph:
 
-```mermaid
-R <--> Main: PRD, architecture.md, tasks.md
-Main --> Punk (round 1, before code): objections on PRD + architecture --> Main triages --> USER decides
+```text
+CEO <--> Main: PRD, architecture.md, tasks.md
+Main --> Punk (round 1, before code): objections on PRD + architecture --> Main triages --> the CEO decides
 per task:
   Main --> Coder: brief-N.md --> code + handoff-N.md
   Main --> Tester (fresh): brief-N.md + code --> test-report-N.md      (Tester and Main review run in parallel)
   Main reviews diff + test report --> pass, or back to Coder with failures (loop <= 3)
 per milestone / demo:
   Main --> Punk: whole product --> objections.md (top 5, each with cost/benefit)
-  Main triages: accept -> new tasks; reject/defer -> written reason; USER arbitrates disagreements
-release: Tester full regression + Punk final pass + USER gate
+  Main triages: accept -> new tasks; reject/defer -> written reason; the CEO arbitrates disagreements
+release: Tester full regression + Punk final pass + CEO gate
 ```
 
-### Rules added by USER (2026-10-31)
+### Rules added by the CEO (2026-10-31)
 
 **Punk scope.** Punk reviews the *product* and *UI/UX* only: does it solve the user's problem, is it usable, what is missing, what is ugly. Punk does not review code. Code quality is Main's job.
 
@@ -115,13 +115,13 @@ Mechanisms:
 
 Hand-off rules to stop information loss: the brief carries goal, acceptance criteria, file list, constraints, test command; the handoff report carries what changed, what is uncertain, how to run. Nothing important lives only in chat.
 
-## 6. USER answers (2026-10-31)
+## 6. The CEO's answers (2026-10-31)
 
 - Size: months-level in vibe coding (half a year if human-coded). So: milestones, repo-state, session protocol are mandatory, not optional.
 - Git: yes.
-- Gates: USER approves Gate 1 (plan) and Gate 3 only. Gate 2 (per task) is automatic: Main review + Tester pass.
-  Main's amendment: Gate 3 runs **per milestone**, not once at project end, otherwise USER sees nothing for months. USER to confirm.
-- Models: strongest model for Main, a fast coding model at its highest reasoning setting for Coder and Tester, a strong-judgment model for Punk (from USERami's team design; written as tiers in v0.2 so the skill is not tied to one model family).
+- Gates: the CEO approves Gate 1 (plan) and Gate 3 only. Gate 2 (per task) is automatic: Main review + Tester pass.
+  Main's amendment: Gate 3 runs **per milestone**, not once at project end, otherwise the CEO sees nothing for months. CEO to confirm.
+- Models: strongest model for Main, a fast coding model at its highest reasoning setting for Coder and Tester, a strong-judgment model for Punk (from the CEO's team design; written as tiers in v0.2 so the skill is not tied to one model family).
 
 ## 7. Draft v0.1 written (2026-10-31)
 
@@ -141,7 +141,7 @@ SKILL.md, agents/gw-coder.md, gw-tester.md, gw-punk.md, references/failure-check
 
 **One git worktree per task** (`<repo>.gw/N/`, branch `gw/N`), parallel or not. Fixes v0.1's shared working tree: parallel test runs interfering, diffs mixing tasks, the Tester's files landing in a review. It also keeps held-out tests out of the Coder's tree. Separation, not a sandbox: the Coder has Bash.
 
-**Punk gets eyes.** The Demo section of architecture.md says how to start the product and take screenshots (Playwright CLI or a throwaway script). Punk reads the images and cites them per objection. When that fails, Main or USER supplies screenshots; Punk never falls back to reading code.
+**Punk gets eyes.** The Demo section of architecture.md says how to start the product and take screenshots (Playwright CLI or a throwaway script). Punk reads the images and cites them per objection. When that fails, Main or the CEO supplies screenshots; Punk never falls back to reading code.
 
 **Models as tiers.** Agent files no longer pin a model or reasoning effort. SKILL.md describes three tiers (strongest; fast coder; judgment + vision) and each installation maps them to whatever family its harness runs. Punk's tier must read images.
 

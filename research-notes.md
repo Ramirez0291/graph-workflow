@@ -1,4 +1,4 @@
-# graph-workflow — research notes (2026-10-31 → 11-03)
+# graph-workflow — research notes
 
 Goal: a Claude Code skill that runs a big product build as a **graph of roles**
 (PM, PjM, Architect, UI/UX, Test, DBA, Security …), where every role is
@@ -98,7 +98,7 @@ per milestone / demo:
 release: Tester full regression + Punk final pass + CEO gate
 ```
 
-### Rules added by the CEO (2026-10-31)
+### Rules added by the CEO
 
 **Punk scope.** Punk reviews the *product* and *UI/UX* only: does it solve the user's problem, is it usable, what is missing, what is ugly. Punk does not review code. Code quality is Main's job.
 
@@ -115,7 +115,7 @@ Mechanisms:
 
 Hand-off rules to stop information loss: the brief carries goal, acceptance criteria, file list, constraints, test command; the handoff report carries what changed, what is uncertain, how to run. Nothing important lives only in chat.
 
-## 6. The CEO's answers (2026-10-31)
+## 6. The CEO's answers
 
 - Size: months-level in vibe coding (half a year if human-coded). So: milestones, repo-state, session protocol are mandatory, not optional.
 - Git: yes.
@@ -123,11 +123,11 @@ Hand-off rules to stop information loss: the brief carries goal, acceptance crit
   Main's amendment: Gate 3 runs **per milestone**, not once at project end, otherwise the CEO sees nothing for months. CEO to confirm.
 - Models: strongest model for Main, a fast coding model at its highest reasoning setting for Coder and Tester, a strong-judgment model for Punk (from the CEO's team design; written as tiers in v0.2 so the skill is not tied to one model family).
 
-## 7. Draft v0.1 written (2026-10-31)
+## 7. Draft v0.1 written
 
 SKILL.md, agents/gw-coder.md, gw-tester.md, gw-punk.md, references/failure-checklist.md, templates/ (STATE, PRD, architecture, tasks, brief, handoff, test-report, objections, decisions, debt). Not yet tested on a real project.
 
-## 8. v0.2 decisions (2026-10-31)
+## 8. v0.2 decisions
 
 **Tester moves before the code.** It writes visible tests (given to the Coder), held-out tests (kept back), and a test plan whose ambiguity list Main resolves in the brief before any code is written.
 
@@ -147,7 +147,7 @@ SKILL.md, agents/gw-coder.md, gw-tester.md, gw-punk.md, references/failure-check
 
 **Also merged into v0.2 from the first review:** unattended mode (park instead of stop), Non-negotiables at trust boundaries (audit may simplify, never delete), trigger words scoped to repos with docs/workflow/, MAST claims corrected in the failure checklist, a run log, the CEO instead of a hard-coded handle, and a Serves line in every brief.
 
-## 9. First run (2026-10-31 → 11-01): v0.2 on Codex, Physics Clawd Pet M1
+## 9. First run: v0.2 on Codex, Physics Clawd Pet M1
 
 **Setup.** The baseline desktop pet (Tauri 2 + TypeScript + Rust, built earlier by single-agent chat) was copied to `rebuild/` and M1 ran as five tasks: independent identity with agent hooks disabled, three feel presets with replayable scenes, control panel and recall, fullscreen quiet behavior, packaging. Main and the fallback Punk ran on Codex; the Claude CLI Punk failed on an expired login. Git did not work in that environment, so the CEO banned it. The CEO did not stop the run before M1 finished.
 
@@ -165,7 +165,7 @@ SKILL.md, agents/gw-coder.md, gw-tester.md, gw-punk.md, references/failure-check
 
 **v0.3 response, one change per finding:** document layout closed and budgeted, raw logs out of the repo, each limitation stated once (STATE "Not verified"); brief ≤ 1 page with the interface limited to what tests call; a named risk layer that a test or a written manual check must reach; the Coder lists every defense it adds and the audit names the small kinds; casts around frozen files fail review; a one-page gate packet in the CEO's language that lists removed or moved features; a minimal no-Git procedure that never copies dependencies or build output; usage recorded per node and per milestone; a checklist question when no held-out test ever fails.
 
-## 10. v0.4 decisions (2026-11-02): the CEO's review of v0.3
+## 10. v0.4 decisions: the CEO's review of v0.3
 
 The CEO found five problems in v0.3 and proposed an external script. Main's responses and the CEO's decisions:
 
@@ -179,7 +179,7 @@ The CEO found five problems in v0.3 and proposed an external script. Main's resp
 
 **Script.** Python 3.8+, standard library, single file (CEO's choice for portability across Windows, WSL and Codex). Target was about 200 lines; it came to about 440 lines of code, mostly refusal messages that say what to do next. Tested end to end on a toy repository: out-of-order refusal, registry and shell-rule failures, a held-out failure burned and replaced by a fresh set, parallel slots and the parallel cap, a refresh conflict resolved and merged, close-out, archive with a parked task, and `gw docs` against every template and against deliberately bad documents. Found and fixed during testing: build outputs counted as changes (now documented: they must be git-ignored), a misleading loop message, parked briefs swept into the archive.
 
-## 11. Flow Timer run (2026-11-02 → 11-03) and the v0.5 decisions
+## 11. Flow Timer run and the v0.5 decisions
 
 **Setup.** One prompt (a Pomodoro-style focus timer with idle detection), four planted edge cases the CEO did not spell out: (a) idle starts with under two minutes left; (b) idle 90 s, manual pause, resume, idle 30 s more; (c) rapid clicks; (d) return within the 10 s grace window, including crossing zero inside it. Four builds: v0.4 on Claude Code, v0.4 on Codex, and a single agent without the skill on each.
 

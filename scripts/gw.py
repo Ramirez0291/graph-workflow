@@ -297,6 +297,13 @@ class TestLock:
             self.p.unlink()
 
 
+def save_task(n, t):
+    """Write one task's entry into the latest state: another gw process may have saved since this one loaded it."""
+    s = state()
+    s["tasks"][n] = t
+    save(STATE, s)
+
+
 def loop_back(s, t, n, why, then="coding"):
     t["loop"] += 1
     t["state"] = "parked" if t["loop"] >= MAX_LOOPS else then
@@ -610,7 +617,7 @@ def cmd_holdout(n):
         for rel in copied:
             (w / c["test_dir"] / rel).unlink()
     t["state"] = "passed" if ok else "holdout-failed"
-    save(STATE, s)
+    save_task(n, t)
     log(n, "holdout", "pass" if ok else "fail (set %d)" % t["set"], t["loop"])
     print(("PASS" if ok else "FAIL (read it with `gw show %s log`)" % n) + ". next: " + hint(n, t))
 
@@ -633,20 +640,28 @@ def cmd_merge(n):
     m = re.search(r"^#\s*Brief\s+\S+\s*[—-]\s*(.+)$", brief_file(n).read_text(encoding="utf-8"), re.M)
     title = m.group(1).strip() if m else "task " + n
     with TestLock(c):
-        copy_in(VAULT / n / ("set-%d" % t["set"]), w / c["test_dir"])
+        copied = copy_in(VAULT / n / ("set-%d" % t["set"]), w / c["test_dir"])
         git("add", "-A", cwd=w)
-        git("commit", "-m", "feat(%s): %s" % (n, title), cwd=w, check=False)
+        r = git("commit", "-m", "feat(%s): %s" % (n, title), cwd=w, check=False)
+        if r.returncode and changed(w):
+            git("reset", "-q", cwd=w, check=False)
+            for rel in copied:
+                (w / c["test_dir"] / rel).unlink()
+            die("commit in the worktree failed (a pre-commit hook?); nothing was merged:\n" + r.stdout[-3000:] + r.stderr[-3000:])
         if git("merge", "--no-edit", c["main_branch"], cwd=w, check=False).returncode:
             git("merge", "--abort", cwd=w, check=False)
             t["state"] = "conflict"
         elif not run_tests(w, t, c, VAULT / n / "last.log"):
             t["state"] = "drift"
         else:
+            ahead = git("rev-list", "--count", "%s..gw/%s" % (c["main_branch"], n), check=False).stdout.strip()
+            if ahead in ("", "0"):
+                die("gw/%s has no commits that %s lacks; refusing to report a merge" % (n, c["main_branch"]))
             r = git("merge", "--no-ff", "-m", "merge(%s): %s" % (n, title), "gw/" + n, check=False)
             if r.returncode:
                 die("merge into main refused (commit or stash your docs first):\n" + r.stdout + r.stderr)
             t["state"] = "merged" if run_tests(ROOT, t, c, VAULT / n / "last.log") else "drift"
-    save(STATE, s)
+    save_task(n, t)
     log(n, "merge", t["state"], t["loop"])
     print(t["state"].upper() + ". next: " + hint(n, t))
     sys.exit(0 if t["state"] == "merged" else 1)

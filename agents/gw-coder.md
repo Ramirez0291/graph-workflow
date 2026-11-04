@@ -30,6 +30,7 @@ The worktree's test folder holds this task's visible tests. More tests you have 
 6. **Security rules written as acceptance criteria, and the brief's Edge cases rows,** are behavior, not defenses. Implement each edge decision exactly as written.
 7. **Ambiguity is a brief defect:** set status `blocked` with the exact question, and stop.
 8. **Run the test command** before you finish; existing and visible tests must pass. Keep raw output out of the handoff.
+   If the repo has commit hooks (pre-commit, husky, lefthook), run them on your changed files and fix what they report: `gw merge` commits through them.
 9. **Loop notes** in the brief describe failing behavior; fix that, and do not go looking for the tests behind them.
 10. **Commit nothing.**
 

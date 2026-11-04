@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.1 — 2026-11-04
+
+From a real project run: one task's code was lost after `gw finish` reported it merged.
+
+| Problem | Change |
+| --- | --- |
+| A pre-commit hook rejected the worktree commit; `gw merge` ignored the failure (`check=False`), merged a branch with nothing new, reported MERGED, and `gw close` then deleted the worktree with the uncommitted code | `gw merge` stops when the worktree commit fails, unstages and removes the copied held-out tests, and says why; it also refuses to merge a task branch with no commits ahead of the main branch |
+| Two `gw` commands at once (two `gw finish` on parallel tasks) overwrote each other's task state, because each loaded `state.json` at the start and saved all of it at the end | `gw holdout` and `gw merge` re-read the state before saving and write only their own task (`save_task`) |
+| The Coder never ran the repo's commit hooks, so lint failures surfaced only inside `gw merge` | `gw-coder` runs the repo's commit hooks on its changed files before handing off |
+
 ## v0.5 — 2026-11-03
 
 From the Flow Timer run (research-notes §11): the workflow decided the planted edge cases as silently as a single agent, and its cost was coordination and test volume, not correctness.

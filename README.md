@@ -172,7 +172,7 @@ One prompt, a focus timer with idle detection and four planted spec ambiguities,
 
 **What it bought:** every planted case pinned by a test, a skip confirmation, a leave warning, state in the tab title and browser tests, at about ten times the time and five times the test volume.
 
-### First real project → v0.7 (research-notes §12)
+### A real project → v0.7 (research-notes §12)
 
 A data dashboard's redesign on Claude Code: three milestones, 39 tasks. Milestones 1 and 2 ran with Main as one conversation; milestone 3 (seven tasks) ran with `gw drive`.
 
@@ -294,3 +294,7 @@ In the repo, tell your agent "use graph workflow to plan <the product>". Main in
 ## License
 
 [MIT](LICENSE)
+
+## About me:
+
+[Rami0291](https://rami0291.com)

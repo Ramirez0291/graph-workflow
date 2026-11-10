@@ -203,3 +203,8 @@ STATE's Mode: `attended` or `unattended`, set by the CEO. Unattended, a task `gw
 ## Failure checklist
 
 Before closing any phase: [references/failure-checklist.md](references/failure-checklist.md).
+
+## About me:
+
+[Rami0291](https://rami0291.com)
+

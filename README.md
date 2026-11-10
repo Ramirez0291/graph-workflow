@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B%20(stdlib%20only)-green.svg)](scripts/gw.py)
-[![Version](https://img.shields.io/badge/version-v0.5%20experimental-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.7%20experimental-orange.svg)](CHANGELOG.md)
 
 **A test-first graph workflow for building software with AI coding agents, where the rules that can be checked mechanically are checked by a script instead of a prompt.**
 
@@ -63,7 +63,7 @@ flowchart TD
 | **Main** | your session (or one fresh session per step under `gw drive`) | strongest | everything in the main checkout | `PRD.md` with edge cases, `architecture.md`, `tasks.md`, briefs, reviews, gate packets |
 | **Tester** | subagent [`gw-tester`](agents/gw-tester.md) | fast coder | the brief and test conventions, before any code exists | visible tests, held-out tests, a test plan with an ambiguity list |
 | **Coder** | subagent [`gw-coder`](agents/gw-coder.md) | fast coder | its worktree `<repo>.gw/N/`: brief, allowed files, visible tests | code + `handoff-N.md` with `## Defenses added` |
-| **Punk** | subagent [`gw-punk`](agents/gw-punk.md) | judgment + vision | `PRD.md` and screenshots of the running product, never source | up to five ranked objections (`objections-M.md`, one page) |
+| **Punk** | subagent [`gw-punk`](agents/gw-punk.md) | judgment + vision | `PRD.md` and the running product in the browser pane (it takes its own screenshots), never source | up to five ranked objections (`objections-M.md`, 350 words) |
 | **gw.py** | [`scripts/gw.py`](scripts/gw.py) | none | main checkout, worktrees, `~/.gw-vault/` | refusals, gate results, test runs, merges, log lines |
 
 Tiers name kinds of model, not a ranking. Pick models per installation; a second model family is best spent on the Tester or Punk.
@@ -82,7 +82,7 @@ Compared with what multi-agent frameworks (LangGraph, CrewAI, AutoGen, MetaGPT) 
 | Ambiguous product decisions | an optional clarification step | a mandatory edge-case table; `gw gate 1` blocks briefs until the human decides |
 | Defensive bloat | left to review | `## Defenses added` table plus an over-defense audit in review |
 | UI and glue code | DOM mocks, or no tests | a pure `step(state, event) -> (state, effects)` core plus a thin shell checked by Punk |
-| Documentation volume | unbounded | `gw docs`: record files tables only, thinking files ≤ 3 sentences per heading, page budgets |
+| Documentation volume | unbounded | `gw docs`: record files tables only, thinking files ≤ 3 sentences per heading, word budgets (brief 350, handoff 150), three rows per handoff table |
 | Orchestrator context | grows for the whole build | one task per session; `gw drive` prototype starts each step fresh |
 
 ---
@@ -180,7 +180,7 @@ From the repo root:
 python ~/.claude/skills/graph-workflow/scripts/gw.py init
 
 # the seven long-lived templates
-cp ~/.claude/skills/graph-workflow/templates/{PRD,STATE,architecture,tasks,decisions,debt,log}.md docs/workflow/
+cp ~/.claude/skills/graph-workflow/templates/{PRD,STATE,architecture,tasks,decisions,log}.md docs/workflow/
 
 # the three subagents (Claude Code; other harnesses use their own agent folder)
 mkdir -p .claude/agents
@@ -221,15 +221,18 @@ In the repo, tell your agent "use graph workflow to plan <the product>". Main in
 | `gw next` / `gw status` | any | the next command per task / one line per task |
 | `gw gate 1` | A | checks the edge-case table and `gates/gate-0.md`; unlocks `gw brief` |
 | `gw brief N` | B | sections, risk layer, file list, page budget, edge rows copied verbatim |
-| `gw planned N` | B | sets present, test caps, edge rows named by tests, no source-text tests; rerunnable |
+| `gw planned N` | B | sets present, test caps, edge rows named by tests, no source-text tests, commit hooks accept the files; rerunnable |
 | `gw seal N` | B | brief committed on main; held-out set and test plan into the vault |
 | `gw open N` | B | worktree `<repo>.gw/N`, setup command, visible tests, `GW_SLOT` |
-| `gw check N` | B | file list, byte-identical visible tests, registry files, shell rule, handoff |
+| `gw check N` | B | file list, byte-identical visible tests, registry files, shell rule, handoff, commit hooks accept the change |
 | `gw finish N` | B | review pass → held-out run → merge with refresh from main → close, stopping at the first failure |
-| `gw review N fail` · `gw burn N` | B | loop back; a failed held-out set becomes visible and a fresh one is written |
+| `gw review N fail "ids"` · `gw burn N` | B | loop back; a review fail names criteria or edge rows of the brief, `check` or `cheat`; a failed held-out set becomes visible and a fresh one is written |
 | `gw holdout N` · `gw merge N` · `gw close N` | B | the steps inside `finish`, one at a time; `close` unlinks links first and can be rerun |
-| `gw park N` · `gw show N plan\|log` | B | park for the human; print the sealed plan or the last run |
-| `gw drive N` | B | prototype: run task N's loop with fresh `claude -p` sessions |
+| `gw park N` · `gw unpark N "why" [state]` | B | park for the human; the human's decision resumes it and is logged |
+| `gw show N plan\|log` | B | print the sealed plan or the last run |
+| `gw drive N [N ...]` | B | prototype: run the tasks' loops in order with fresh `claude -p` sessions; a stop leaves one page in `.gw/` |
+| `gw try brief\|planned N` | B | the author's self-check: what would be refused, with nothing changed |
+| `gw hook [k]` | any | Claude Code PreToolUse hook: no new work from a session over k thousand tokens of context |
 | `gw gate 3 M<n>` | C | tasks closed, no provisional edge rows, gate packet and Punk report present, docs clean |
 | `gw archive M<n>` | C | after Gate 3: move the milestone's files to `docs/workflow/archive/M<n>/` |
 | `gw docs` | any | record/thinking rules, budgets, layout, Punk screenshot caps |
@@ -239,8 +242,9 @@ In the repo, tell your agent "use graph workflow to plan <the product>". Main in
 - [`SKILL.md`](SKILL.md): the workflow, written for Main.
 - [`scripts/gw.py`](scripts/gw.py): step state machine, gates, vault, worktrees, document checks.
 - [`scripts/drive.py`](scripts/drive.py) and [`references/drive.md`](references/drive.md): the `gw drive` prototype.
+- [`tests/test_gw.py`](tests/test_gw.py): end-to-end checks on a toy repository with a fake `claude`; `python3 -m unittest discover -s tests`.
 - [`agents/`](agents/): [`gw-coder`](agents/gw-coder.md), [`gw-tester`](agents/gw-tester.md), [`gw-punk`](agents/gw-punk.md).
-- [`templates/`](templates/): PRD, architecture, tasks, STATE, brief, handoff, test plan, test report, objections, gate packet, decisions, debt, log; all pass `gw docs`.
+- [`templates/`](templates/): PRD, architecture, tasks, STATE, brief, handoff, test plan, objections, gate packet, decisions, log; all pass `gw docs`.
 - [`references/failure-checklist.md`](references/failure-checklist.md): pre-gate checks based on MAST's failure taxonomy (arXiv 2503.13657).
 - [`research-notes.md`](research-notes.md) and [`CHANGELOG.md`](CHANGELOG.md): sources, decisions, post-mortems of both real runs, benchmark numbers.
 

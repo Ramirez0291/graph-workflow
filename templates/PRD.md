@@ -39,6 +39,25 @@ Main sweeps every requirement against each category and writes a row for each ca
 
 > Source is `CEO`, or `Main provisional` for a row found after Gate 1; `gw gate 3` waits until the CEO confirms it.
 
+## Approvals
+Main lists, by category, what the build will need that somebody must approve before it happens; the CEO fills Decision, after whatever sign-off their organisation requires. Column order is fixed, because `gw gate 1` reads it. A category that needs nothing goes on the "Nothing needed" line.
+
+| # | Category | What | Decision | Source |
+|---|---|---|---|---|
+| P1 | dependency | <library and version, what for> | <approved / refused, by whom> | CEO |
+
+- Nothing needed: <categories, comma separated>
+
+| Category | Ask |
+|---|---|
+| dependency | a new library, tool, extension or runtime |
+| service | a new outside service, API, account or connection |
+| send | anything sent or published: mail, chat posts, uploads, sharing settings |
+| delete | data or files deleted, overwritten or updated in bulk |
+| production | a production system, permissions, security settings, anything billed |
+
+> A need found after Gate 1 stops the step that has it; the CEO adds the row. `gw gate 3` waits while a row has no decision.
+
 ## Scope — in
 - ...
 

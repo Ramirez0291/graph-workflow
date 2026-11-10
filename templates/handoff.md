@@ -1,5 +1,5 @@
 # Handoff N — <task title>
-> Tables only, half a page at most.
+> Tables only, 150 words at most, three rows per table at most.
 
 | Field | Value |
 |---|---|

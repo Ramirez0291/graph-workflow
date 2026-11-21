@@ -19,25 +19,31 @@
 | S1 | | |
 
 ## Edge cases
-Main sweeps every requirement against each category and writes a row for each case that reads two ways; the CEO fills Decision. Column order is fixed, because `gw gate 1` reads it. A category with nothing in dispute goes on the "No dispute" line instead of getting rows.
+Main traces the requirements through existing callers, stored data and runtime settings, settling engineering details from the codebase and earlier decisions. Every open product choice where two readings change what the user gets becomes a row (`E1`, `E2` …), and the CEO fills Decision (an empty table is valid when nothing is in dispute). Column order is fixed, because `gw gate 1` reads it.
 
 | # | Req | Category | Case | Options | Recommended | Decision | Source |
 |---|---|---|---|---|---|---|---|
-| E1 | S1 | threshold | <the case> | <A / B> | <Main's pick> | <the CEO writes this> | CEO |
 
-- No dispute: <categories, comma separated>
+> Source is `CEO`, or `Main provisional` for a row found after Gate 1; `gw gate 3` waits until the CEO confirms it.
+
+## Approvals
+Main lists, by category, what the build will need that somebody must approve before it happens; the CEO fills Decision, after whatever sign-off their organisation requires. Column order is fixed, because `gw gate 1` reads it. A category that needs nothing goes on the "Nothing needed" line.
+
+| # | Category | What | Decision | Source |
+|---|---|---|---|---|
+| P1 | dependency | <library and version, what for> | <approved / refused, by whom> | CEO |
+
+- Nothing needed: <categories, comma separated>
 
 | Category | Ask |
 |---|---|
-| threshold | exactly at, just under, too little left |
-| interleave | another action arrives mid-state: does the count carry on |
-| repeat | the same action twice fast, two sources at once |
-| time-cross | a window crosses another deadline |
-| counting | what counts as one, what does not |
-| environment | reload, midnight, several tabs or windows, background throttling |
-| failure | a step fails halfway, stored data is corrupt |
+| dependency | a new library, tool, extension or runtime |
+| service | a new outside service, API, account or connection |
+| send | anything sent or published: mail, chat posts, uploads, sharing settings |
+| delete | data or files deleted, overwritten or updated in bulk |
+| production | a production system, permissions, security settings, anything billed |
 
-> Source is `CEO`, or `Main provisional` for a row found after Gate 1; `gw gate 3` waits until the CEO confirms it.
+> A need found after Gate 1 stops the step that has it; the CEO adds the row. `gw gate 3` waits while a row has no decision.
 
 ## Scope — in
 - ...

@@ -1,5 +1,5 @@
 # STATE
-> Read first every session, update last. Written in the CEO's language; tables only.
+> Read first every session, update last. Written in the CEO's language; tables only; 300 words at most.
 
 | Field | Value |
 |---|---|

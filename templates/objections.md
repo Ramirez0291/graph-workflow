@@ -2,7 +2,7 @@
 verdict: ship-it | fix-first | rethink
 screens: <folder>, <n> screenshots, sizes <...>
 
-One page at most.
+350 words at most.
 
 ## The user's main task
 <could you do it? how did it feel? three sentences at most>

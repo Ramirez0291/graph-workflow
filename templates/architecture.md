@@ -57,7 +57,7 @@ Trust boundaries where someone can cause the failure on purpose. The audit may s
 ## Demo (for Punk)
 | Item | Value |
 |---|---|
-| Start | `<command>`; ready when <...> |
+| Start | `<command>`; ready when <...> (include a local data copy when testing against existing data) |
 | Screenshot | `<e.g. npx playwright screenshot --full-page --viewport-size="1280,800" <url> 01-home.png>` |
 | Screen sizes | <desktop / phone / both> |
 | No screen | <how a user drives it> |

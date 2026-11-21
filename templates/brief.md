@@ -1,6 +1,6 @@
 # Brief N — <task title>
 
-One page. The only channel into the Coder and the Tester: say what and how it is checked, not how it is built.
+Aim for one page. The only task channel into the Coder and the Tester: say what changes and how it is checked, not how it is built inside.
 
 ## Goal
 <one or two sentences: what exists when this is done, from the user's point of view>
@@ -52,7 +52,7 @@ For an orchestration task, replace the list with two tables.
 
 ## Tests
 - Visible: <paths> (filled by Main after the spec check)
-- Manual check for the risk layer, if no test reaches it: <steps → expected result>
+- Manual check for the risk layer, if fixtures or tests do not reach it: <starting state / data copy → steps → expected result>
 - More tests you have not seen will run against the same criteria.
 
 ## Change notes

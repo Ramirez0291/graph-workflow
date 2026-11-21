@@ -214,3 +214,74 @@ The CEO found five problems in v0.3 and proposed an external script. Main's resp
 | Group D (single agent + sweep + Punk)? | Not run. Coder and Tester are separate to keep Main's context small and to allow parallel work on large projects; the CEO tests v0.5 on a large project instead |
 
 **Tested.** `gw.py` on a toy repository: Gate 1 refusals per category, empty decision, missing packet; brief refusal before Gate 1 and on a decision that differs from the PRD; `gw planned` refusing an over-cap set, an edge row without a test and a test reading `src/calc.py`; rerun of `planned`; links inside a worktree removed before deletion with their target intact; a held-out failure burned and replaced; a replan sealing into the open worktree; `close` rerun after the worktree was already gone; Gate 3 refusals for a provisional row, a missing packet and 13 screenshots; `archive` before Gate 3. `gw drive` end to end with a fake CLI (ten sessions, one held-out loop), and its flag combination against Claude Code 2.1.316.
+
+## 12. First real project and the v0.7 decisions
+
+**Setup.** A data dashboard's redesign, three milestones, 39 tasks, on Claude Code with v0.5. Milestones 1 and 2 ran with Main as one conversation; milestone 3 (seven tasks) ran with `gw drive`, one call per task, launched from a conversation. Usage was reconstructed from the session transcripts afterwards.
+
+| | M1 | M2 | M3 (drive) |
+| --- | --- | --- | --- |
+| Tasks | 20 | 12 | 7 |
+| Tokens processed (cache reads 96–98 %) | 649M | 185M | 186M |
+| Main's share of them | 87 % | 82 % | 82 % |
+| Main's context per request | 514k | 277k | 299k in the conversation, 80k in drive steps |
+| Tester output / Coder output | 2.3 | 3.4 | 1.3 |
+
+**Findings from milestone 3.**
+
+- *The drive kept its steps small, and the conversation that launched it did not stay small.* That conversation made 339 requests and grew from 122k to 519k tokens. It was woken 29 times: 23 by a drive ending, 5 by the CEO. It ran 244 shell commands, mostly finding out why a drive had stopped and repairing it. Subagent reports were four, about 4,000 characters. Idle time cost little: the cache went cold twice.
+- *All nine stops were mechanical.* Five: the repo's commit hook rejected the Tester's files inside `gw merge`, although the project's Tester file already said to lint like the repo. Two: a note on a brief's Files line. Two: defects of the drive itself.
+- *The review asked for more than the brief.* Two tasks were parked after three failed reviews each; the CEO overruled both and called it over-defense. Review and spec check were 65 % of the drive's cost.
+- *Eyes found the defects.* Of the milestone's real defects, Punk's three rounds found fourteen, Main looking at the product one, the review one, a visible test one, a trial on real data one; held-out tests none (two sets written).
+- *The full suite ran three times per task* (held-out run, before the merge, after it), about eight minutes each: some three hours of the milestone with no model working.
+- *The log under-reported.* Seven of 67 rows: sessions that had started a background task.
+- *Prose lost again.* "One task per session" was not followed in any milestone, and the Tester's first output was refused seven times out of ten.
+
+**v0.7 decisions (CEO, 2026-11-10).**
+
+| Question | Decision |
+| --- | --- |
+| Is the workflow worth its cost on a long build? | Yes: across three milestones it raised the quality of what was committed and kept the agent from losing the whole for local tweaks. Lower token use is still required |
+| Stops that need no decision | Move each gate to where its author can still fix the thing: commit hooks rehearsed at `planned` and `check`, Files lines checked at `brief`, a refusal back to its author once |
+| Who watches the drive | Nobody. A queue, a stop page, and one purpose per session; a hook refuses new work from a session over its context budget |
+| What a review may fail | What the brief asks, by id; `check`; `cheat`. The rest is deferred |
+| Held-out tests and spec checks on UI tasks | None; a spec check only when there is something to judge |
+| Can prose beat a model's habits, with an administrator's system prompt in the same context? | Unknown; so each rule above is in `gw.py`, and approvals are collected before Gate 1, because a session with nobody to ask cannot get one |
+| Three suite runs per task | Open: skip a run when the tree is the one already tested |
+| Usage per step as data, not as a log column | Open |
+
+<a id="m6"></a>
+
+## 13. Milestone 6 on an existing product and the v0.8 decisions
+
+**Setup.** Six tasks (39–44) adding an automated update queue to an existing product, run with v0.7 and `gw drive` on 2026-11-20, followed by a same-evening fix commit. Numbers below come from the git history, `docs/workflow/`, and the main and `gw drive` transcripts. Task 45 (release) and the post-milestone Punk round had not run yet.
+
+| Metric | Value |
+| --- | --- |
+| Main session wall time / tool calls | ≈ 10.4 h / 498 (398 Bash) |
+| `gw drive` sessions | 45 (coder 10, tester 12, spec 12, review 9, loop notes 2) |
+| Commits | 45 |
+| Product code | +743 / −61 lines |
+| Tests | +3,819 / −23 lines (≈ 159 tests across 22 files; ≈ 5 : 1 test : product) |
+| Workflow docs | +1,052 / −26 lines (≈ 1.3 : 1 docs : product) |
+| Formal reworks | 4 across 3 tasks — all fixed tests or briefs; the Coder's code did not change |
+
+**Findings.**
+
+- *No build stop needed the CEO, and the over-defense audit worked — without the handoff table.* All six tasks ran unattended. Review deleted at least seven redundant guards across five tasks, while all six handoffs reported `Defenses added: none`. The self-report table added nothing.
+- *The word cap turned into a compression loop.* After loop notes were added to `brief-43.md`, it was edited about 24 times, checked 20 times with `gw try brief`, and refused at least six times by `gw seal` over a 350-word limit (375 → 355.5 → 352.5 → 351). Task 41's worktree brief also drifted to 508 words while main held an older copy.
+- *Tests written without reading the schema burned loops on the Tester's own bugs.* In task 43, the visible tests and two held-out sets ran `INSERT OR REPLACE` on a table with no primary key and read a column that did not exist; all three held-out failures were test bugs, costing 11 tester, spec and review sessions without changing a line of product code. Task 41 burned a loop on an unquoted SQL keyword in a held-out test; task 40 on three stale tests that had been updated on main.
+- *Clean fixtures hid four real defects.* Every test started from a fresh empty database with one or two toy templates and called functions directly. When Main ran the app against a copy of the production database, the page crashed on a missing table (read-only connection on an unmigrated database), took 78 seconds on the 11 real templates, failed to refresh the list after enqueueing, and showed a button in the wrong UI language.
+- *The edge-case sweep rewarded volume.* Earlier milestones had grown the PRD edge table to 92 rows, most of them engineering questions that existing callers or a single default rule ("skip bad records and report; stop only on irreversible actions") already settled. Cutting the table to genuine product choices reduced M6 to six rows.
+- *Merged is not deployed.* The team had already recorded that the server does not hot-reload, yet nobody asked for approval to restart the production container until the end of the evening session; the CEO hit an `ImportError` from the old process the next day.
+
+**v0.8 decisions.**
+
+| Question | Decision |
+| --- | --- |
+| Word budget on briefs | Drop the hard word gate on `brief-*.md`; keep the one-page aim and the section, risk-layer, file-list and edge-row checks. When a worktree is open, `gw try brief`, `gw planned` and `gw seal` read the worktree copy |
+| Seven-category edge sweep | Drop `edge_categories`. Main checks existing callers, schema and configuration first; only open product choices that change what users get enter `## Edge cases`, and an empty table passes `gw gate 1` |
+| `Defenses added` in handoffs | Drop the section from the handoff template and `gw check`. Review audits the diff directly against callers, data and existing guards |
+| Tester isolation from the codebase | Keep the Tester away from the Coder's diff and handoff, not from the existing repo: the Tester reads the pre-change schema, callers and test helpers so its fixtures and expectations match reality |
+| Catching regressions on existing data | Review tries the change on a representative local data copy when fixtures omit it, and may fail a task with `gw review N fail "regression: <existing use and observed break>"` |
+| Spent held-out sets on test bugs; production restart timing | Open |
